@@ -14,13 +14,12 @@ contract Proposition is Ownable{
     event WinnerRedeem(address indexed user,uint256 PropositionID, uint256 amount);
 
     IERC20 public USDTContract;
-     enum TokenStatus {Pending, Active, Completed, Cancelled}
-     enum ProposalType {Normal, Price,Oracle}
+    uint256 JobID;
+    enum TokenStatus {Pending, Active, Completed, Cancelled}
+    enum ProposalType {Normal, Price,Oracle}
     
 
-    constructor(address _USDT){
-        USDTContract = IERC20(_USDT);
-    }
+    
     struct  Proposal {
         uint256 PropositionID;
         string Name;
@@ -50,6 +49,12 @@ contract Proposition is Ownable{
     }
     Proposal[] public proposals;
 
+
+
+    constructor(address _USDT, uint256 _jobID){
+        USDTContract = IERC20(_USDT);
+        JobID = _jobID;
+    }
     modifier ProposalExists(uint256 _proposalID) {
         require(proposals[_proposalID/3].TokenIDYes != address(0), "Proposal does not exist");
         _;
@@ -64,7 +69,7 @@ contract Proposition is Ownable{
                 filter: _filter,
                 value: _value
             });
-        proposals[proposals.length] = Proposal(
+         proposals.push(Proposal(
             proposals.length*3,
             _Name, 
             _Description, 
@@ -77,7 +82,7 @@ contract Proposition is Ownable{
             PriceProposal(AggregatorV3Interface(address(0)), 0, false),
             normalProp,
             msg.sender
-            );
+            ));
 
         emit AddProposition(msg.sender, proposals.length*3, ProposalType.Oracle)
     }
@@ -91,7 +96,7 @@ contract Proposition is Ownable{
                 aim: _aim,
                 isBig: _isBig
             });
-        proposals[proposals.length] = Proposal(
+        proposals.push(Proposal(
             proposals.length*3,
             _Name, 
             _Description, 
@@ -103,7 +108,7 @@ contract Proposition is Ownable{
             OracleProposal("", 0, false),
             priceProp,
      msg.sender
-            );
+            ));
 
         emit AddProposition(msg.sender, proposals.length*3, ProposalType.Price);
     }
@@ -112,7 +117,7 @@ contract Proposition is Ownable{
      //TODO  设置yes和no token
         ERC20 token1  = new ERC20(proposals.length*3 + 1, symbol1);
         ERC20 token2  = new ERC20(proposals.length*3 + 2, symbol1);
- proposals[proposals.length] = Proposal(
+  proposals.push(Proposal(
             proposals.length*3,
             _Name, 
             _Description, 
@@ -124,7 +129,7 @@ contract Proposition is Ownable{
             OracleProposal(_url, 0, false),
             PriceProposal(address(0), 0, false),
             msg.sender
-            );
+            ));
      emit AddProposition(msg.sender, proposals.length*3, ProposalType.Normal);
     }
 
@@ -238,31 +243,20 @@ contract Proposition is Ownable{
 
 }
 
- function getHistoricalPrice(address _proxyAddress, uint _unixTime) public returns (bytes32
-requestId)
-    {
+//  function getHistoricalPrice(address _proxyAddress, uint _unixTime) public returns (bytes32
+// requestId)
+//     {
 
-        Chainlink.Request memory request = buildChainlinkRequest(jobId, address(this), 
-this.singleResponseFulfill.selector);
+//         Chainlink.Request memory request = buildChainlinkRequest(JobID, address(this), 
+// this.singleResponseFulfill.selector);
 
-        // Set the URL to perform the GET request on
-        request.add("proxyAddress", addressToString(_proxyAddress));
-        request.add("unixDateTime", uint2str(_unixTime));
+//         // Set the URL to perform the GET request on
+//         request.add("proxyAddress", addressToString(_proxyAddress));
+//         request.add("unixDateTime", uint2str(_unixTime));
 
-        //set the timestamp being searched, we will use it for verification after
-        searchTimestamp = _unixTime;
+//         //set the timestamp being searched, we will use it for verification after
+//         searchTimestamp = _unixTime;
 
-        //reset any previous values
-        answerRound = 0;
-        previousRound = 0;
-        nextRound = 0;
-        nextPrice = 0;
-        nextPriceTimestamp = 0;
-        previousPrice = 0;
-        previousPriceTimestamp = 0;
-        priceAnswer = 0;
-        priceTimestamp = 0;
-
-        // Sends the request
-        return sendChainlinkRequestTo(oracle, request, fee);
-    }
+//         // Sends the request
+//         return sendChainlinkRequestTo(oracle, request, fee);
+//     }

@@ -67,5 +67,8 @@
   "packageManager": "pnpm@8.6.12",
   "prettier": {
     "trailingComma": "all"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.0.0"
   }
 }
